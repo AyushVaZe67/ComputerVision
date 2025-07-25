@@ -9,6 +9,10 @@ hands = mpHands.Hands()
 
 while True:
     sucess,img = cap.read()
+
+    imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    results = hands.process(img)
+
     cv2.imshow('Image',img)
     cv2.waitKey(1)
 
