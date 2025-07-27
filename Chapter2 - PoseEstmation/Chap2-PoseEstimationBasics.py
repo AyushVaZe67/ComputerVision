@@ -1,19 +1,12 @@
 import os
+import cv2
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import mediapipe as mp
 
+cap = cv2.VideoCapture('pose_estimation_2.mp4')
 
-mp_pose = mp.solutions.pose
-
-pose = mp_pose.Pose(
-    static_image_mode=False,  # For video/live stream
-    model_complexity=1,       # 0=light, 1=balanced, 2=heavy
-    smooth_landmarks=True,
-    enable_segmentation=False,
-    smooth_segmentation=True,
-    min_detection_confidence=0.5,
-    min_tracking_confidence=0.5
-)
-
-
-print('Ayush')
+while True:
+    success, img = cap.read()
+    cv2.imshow('Image', img)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
