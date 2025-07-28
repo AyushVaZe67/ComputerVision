@@ -41,7 +41,7 @@ class PoseDetector:
         return lmList
 
 def main():
-    cap = cv2.VideoCapture('pose_estimation_3.mp4')
+    cap = cv2.VideoCapture('pose_estimation_6.mp4')
     pTime = 0
     detector = PoseDetector()
 
