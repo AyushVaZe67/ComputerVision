@@ -45,15 +45,16 @@ def main():
     pTime = 0
     detector = PoseDetector()
 
-    x_coords = []
+    y_coords = []
 
-    plt.ion()  # Interactive mode ON
+    plt.ion()  # Enable interactive mode
     fig, ax = plt.subplots()
-    line, = ax.plot(x_coords)
-    ax.set_ylim(0, 1280)  # Assuming 1280 is max width of video frame
-    ax.set_title("Landmark 20 X-Coordinate")
+    line, = ax.plot(y_coords)
+    ax.set_ylim(0, 720)  # Adjust based on your video height
+    ax.invert_yaxis()    # 🔄 Reverse Y-axis
+    ax.set_title("Landmark 20 Y-Coordinate (Inverted)")
     ax.set_xlabel("Frame")
-    ax.set_ylabel("X Position")
+    ax.set_ylabel("Y Position (Top to Bottom)")
 
     while True:
         success, img = cap.read()
@@ -64,29 +65,32 @@ def main():
         lmList = detector.getPosition(img, draw=False)
 
         if len(lmList) > 20:
-            x = lmList[20][2]
-            x_coords.append(x)
+            y = lmList[20][2]  # Y-coordinate
+            y_coords.append(y)
 
-            # Draw on frame
-            cv2.circle(img, (x, lmList[20][2]), 15, (5, 255, 5), cv2.FILLED)
+            # Draw a circle on the tracked point
+            cv2.circle(img, (lmList[20][1], y), 15, (5, 255, 5), cv2.FILLED)
 
             # Update matplotlib plot
-            line.set_ydata(x_coords)
-            line.set_xdata(range(len(x_coords)))
-            ax.set_xlim(0, len(x_coords) if len(x_coords) > 50 else 50)
+            line.set_ydata(y_coords)
+            line.set_xdata(range(len(y_coords)))
+            ax.set_xlim(0, len(y_coords) if len(y_coords) > 50 else 50)
             ax.figure.canvas.draw()
             ax.figure.canvas.flush_events()
 
+        # Calculate FPS
         cTime = time.time()
         fps = 1 / (cTime - pTime)
         pTime = cTime
 
-        cv2.putText(img, str(int(fps)), (70, 50), cv2.FONT_HERSHEY_PLAIN, 3, (255, 255, 255))
+        cv2.putText(img, f'FPS: {int(fps)}', (70, 50), cv2.FONT_HERSHEY_PLAIN, 3, (255, 255, 255), 2)
 
+        # Show video frame
         cv2.imshow('Pose Tracking', img)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
+    # Clean up
     cap.release()
     cv2.destroyAllWindows()
     plt.ioff()
