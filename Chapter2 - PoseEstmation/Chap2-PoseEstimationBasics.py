@@ -9,7 +9,7 @@ mpPose = mp.solutions.pose
 pose = mpPose.Pose()
 
 pTime = 0
-cap = cv2.VideoCapture('pose_estimation_2.mp4')
+cap = cv2.VideoCapture('pose_estimation_5.mp4')
 
 while True:
     success, img = cap.read()
@@ -23,8 +23,6 @@ while True:
             print(id, lm)
             cx,cy = int(lm.x * w), int(lm.y * h)
             cv2.circle(img, (cx,cy), 5, (255,5,5), cv2.FILLED)
-
-
 
 
     cTime = time.time()
