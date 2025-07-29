@@ -16,6 +16,11 @@ while True:
     results = faceDetection.process(imgRGB)
     print(results)
 
+    if results.detections:
+        for id,detection in enumerate(results.detections):
+            # print(id,detection)
+            print(detection.score)
+
     cTime = time.time()
     fps = 1/(cTime-pTime)
     pTime = cTime
