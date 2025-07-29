@@ -10,6 +10,6 @@ while True:
     cTime = time.time()
     fps = 1/(cTime-pTime)
     pTime = cTime
-    cv2.putText(img,f'{int(fps)}',(20,70),cv2.FONT_HERSHEY_PLAIN,3,(255,255,0))
+    cv2.putText(img,f'{int(fps)}',(20,70),cv2.FONT_HERSHEY_PLAIN,6,(0,0,0))
     cv2.imshow('img', img)
     cv2.waitKey(10)
