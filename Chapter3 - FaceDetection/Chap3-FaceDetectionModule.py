@@ -38,11 +38,34 @@ class FaceDetector():
 
 def main():
     cap = cv2.VideoCapture('face_detection1.mp4')
+    if not cap.isOpened():
+        print("❌ Error: Could not open video file.")
+        return
+
     pTime = 0
     detector = FaceDetector(0.4)
+
     while True:
         success, img = cap.read()
+        if not success:
+            print("❌ Failed to read frame (maybe end of video). Exiting...")
+            break
+
         img, bboxs = detector.findFaces(img)
+
+        cTime = time.time()
+        fps = 1 / (cTime - pTime) if (cTime - pTime) != 0 else 0
+        pTime = cTime
+
+        cv2.putText(img, f'FPS: {int(fps)}', (20, 70),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+        cv2.imshow("Face Detection", img)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     main()
