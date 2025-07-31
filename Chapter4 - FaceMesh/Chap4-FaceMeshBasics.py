@@ -5,7 +5,7 @@ import time
 import mediapipe as mp
 import cv2
 
-cap = cv2.VideoCapture('face_detection1.mp4')
+cap = cv2.VideoCapture('face_mesh1.mp4')
 pTime = 0
 
 
@@ -15,6 +15,12 @@ faceMesh = mpFaceMesh.FaceMesh(max_num_faces=2)
 
 while True:
     success,img = cap.read()
+    imgRGB = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+    results = faceMesh.process(imgRGB)
+    if results.multi_face_landmarks:
+        for faceLms in results.multi_face_landmarks:
+            mpDraw.draw_landmarks(img,faceLms,mpFaceMesh.FACE_CONNECTIONS)
+
     cTime = time.time()
     fps = 1/(cTime-pTime)
     pTime = cTime
