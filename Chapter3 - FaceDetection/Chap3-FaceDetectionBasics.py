@@ -2,7 +2,7 @@ import cv2
 import time
 import mediapipe as mp
 
-cap = cv2.VideoCapture('face_detection1.mp4')
+cap = cv2.VideoCapture('face_detection2.mp4')
 pTime = 0
 
 mpFaceDetection = mp.solutions.face_detection
@@ -33,6 +33,6 @@ while True:
     cTime = time.time()
     fps = 1/(cTime-pTime)
     pTime = cTime
-    cv2.putText(img,f'FPS:{int(fps)}',(20,70),cv2.FONT_HERSHEY_PLAIN,6,(0,0,0),5)
+    cv2.putText(img,f'FPS:{int(fps)}',(20,70),cv2.FONT_HERSHEY_PLAIN,4,(0,0,0),3)
     cv2.imshow('img', img)
-    cv2.waitKey(1)
+    cv2.waitKey(10)
