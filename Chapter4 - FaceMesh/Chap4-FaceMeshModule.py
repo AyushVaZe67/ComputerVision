@@ -39,11 +39,13 @@ class FaceMeshDetector:
                     x,y = int(lm.x*iw),int(lm.y*ih)
                     # print(id,x,y)
                     face.append([x,y])
-            faces.append(face)
+                    cv2.putText(img, str(id), (x, y), cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 0), 1)
+
+                faces.append(face)
         return img, faces
 
 def main():
-    cap = cv2.VideoCapture('face_mesh1.mp4')
+    cap = cv2.VideoCapture('face_mesh2.mp4')
     pTime = 0
 
     detector = FaceMeshDetector()
