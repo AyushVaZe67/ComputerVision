@@ -1,5 +1,6 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 import cv2
 import numpy as np
 import mediapipe as mp
@@ -13,10 +14,13 @@ detector = htm.HandDetector()
 
 while True:
     success, img = cap.read()
-    detector.findHands(img)
     if not success or img is None:
-        print("Failed to capture frame.")
+        print("Frame not captured. Skipping...")
         continue
+
+    img = detector.findHands(img)
+    lmList = detector.findPosition(img, draw=False)
+    print(lmList)
 
     # FPS calculation
     cTime = time.time()
