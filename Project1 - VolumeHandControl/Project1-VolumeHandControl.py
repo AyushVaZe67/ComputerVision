@@ -18,12 +18,16 @@ while True:
         print("Failed to capture frame.")
         continue
 
+
     # Detect hands
     img, _ = detector.findHands(img)
 
     # Get landmark positions
     lmList = detector.findPosition(img, draw=False)
 
+
+    if len(lmList) != 0:
+        print(lmList[2])
     # FPS calculation
     cTime = time.time()
     fps = 1 / (cTime - pTime + 1e-8)
