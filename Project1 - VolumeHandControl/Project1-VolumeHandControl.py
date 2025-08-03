@@ -5,7 +5,9 @@ import cv2
 import time
 import HandTrackingModule as htm
 import math
-from pycaw.pycaw import AudioUtilities
+from ctypes import cast, POINTER
+from comtypes import CLSCTX_ALL
+from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
 # Initialize camera
 cap = cv2.VideoCapture(0)
@@ -14,12 +16,15 @@ pTime = 0
 detector = htm.HandDetector(detectionCon=0.7)
 
 device = AudioUtilities.GetSpeakers()
-volume = device.EndpointVolume
-print(f"Audio output: {device.FriendlyName}")
-# print(f"- Muted: {bool(volume.GetMute())}")
-# print(f"- Volume level: {volume.GetMasterVolumeLevel()} dB")
+interface = device.Activate(IAudioEndpointVolume._iid_,CLSCTX_ALL,None)
+
+volume = cast(interface, POINTER(IAudioEndpointVolume))
+
+# print(f"Audio output: {device.FriendlyName}")
+# # print(f"- Muted: {bool(volume.GetMute())}")
+# # print(f"- Volume level: {volume.GetMasterVolumeLevel()} dB")
 print(f"- Volume range: {volume.GetVolumeRange()[0]} dB - {volume.GetVolumeRange()[1]} dB")
-# volume.SetMasterVolumeLevel(-20.0, None)
+volume.SetMasterVolumeLevel(0.0, None)
 
 while True:
     success, img = cap.read()
