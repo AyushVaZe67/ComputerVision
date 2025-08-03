@@ -13,23 +13,18 @@ from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 # Initialize camera
 cap = cv2.VideoCapture(0)
 pTime = 0
+
 # Create hand detector
 detector = htm.HandDetector(detectionCon=0.7)
 
+# Setup audio control
 device = AudioUtilities.GetSpeakers()
-interface = device.Activate(IAudioEndpointVolume._iid_,CLSCTX_ALL,None)
-
+interface = device.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
 volume = cast(interface, POINTER(IAudioEndpointVolume))
 
-# print(f"Audio output: {device.FriendlyName}")
-# # print(f"- Muted: {bool(volume.GetMute())}")
-# # print(f"- Volume level: {volume.GetMasterVolumeLevel()} dB")
-# print(f"- Volume range: {volume.GetVolumeRange()[0]} dB - {volume.GetVolumeRange()[1]} dB")
-volRange = volume.GetVolumeRange()
-volume.SetMasterVolumeLevel(0.0, None)
-minVol = volRange[0]
-maxVol = volRange[1]
-
+# Constants for volume range
+minLength = 30
+maxLength = 180
 
 while True:
     success, img = cap.read()
@@ -39,46 +34,61 @@ while True:
 
     # Detect hands
     img, _ = detector.findHands(img)
-
-    # Get landmark positions
     lmList = detector.findPosition(img, draw=False)
 
-
     if len(lmList) != 0:
-        # print(lmList[4],lmList[8])
+        # Get coordinates
+        x1, y1 = lmList[4][1], lmList[4][2]
+        x2, y2 = lmList[8][1], lmList[8][2]
+        cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
 
-        x1,y1 = lmList[4][1],lmList[4][2]
-        x2,y2 = lmList[8][1],lmList[8][2]
-        cx,cy = (x1+x2)//2,(y1+y2)//2
+        # Draw UI elements
+        cv2.circle(img, (x1, y1), 15, (0, 255, 200), cv2.FILLED)
+        cv2.circle(img, (x2, y2), 15, (0, 255, 200), cv2.FILLED)
+        cv2.line(img, (x1, y1), (x2, y2), (255, 50, 50), 3)
+        cv2.circle(img, (cx, cy), 12, (255, 0, 100), cv2.FILLED)
 
-        cv2.circle(img,(x1,y1),15,(0,255,0),cv2.FONT_HERSHEY_PLAIN)
-        cv2.circle(img, (x2, y2), 15, (0,255,0), cv2.FONT_HERSHEY_PLAIN)
-        cv2.line(img,(x1,y1),(x2,y2),(255,0,0),3)
-        cv2.circle(img,(cx,cy),15,(255,0,55),cv2.FILLED)
+        # Distance between fingers
+        length = math.hypot(x2 - x1, y2 - y1)
+        length = np.clip(length, minLength, maxLength)
 
-        length = math.hypot(x2-x1,y2-y1)
-        print(length)
+        # Map length to volume percent (0.0 to 1.0)
+        volScalar = np.interp(length, [minLength, maxLength], [0.0, 1.0])
+        volPer = int(volScalar * 100)
 
-        #HandRange
-        vol = np.interp(length,[50,300],[minVol,maxVol])
-        print(int(length),vol)
+        # Set volume
+        volume.SetMasterVolumeLevelScalar(volScalar, None)
 
-        if length<50:
-            cv2.circle(img, (cx, cy), 15, (255, 255, 55), cv2.FILLED)
+        # Volume bar position
+        volBar = np.interp(volScalar, [0.0, 1.0], [400, 150])
 
-    # FPS calculation
+        # Volume bar color based on level
+        if volPer <= 30:
+            barColor = (0, 0, 255)      # Red
+        elif volPer <= 70:
+            barColor = (0, 255, 255)    # Yellow
+        else:
+            barColor = (0, 255, 0)      # Green
+
+        # Special circle when muted
+        if volPer == 0:
+            cv2.circle(img, (cx, cy), 20, (0, 0, 255), cv2.FILLED)
+
+        # Draw volume bar
+        cv2.rectangle(img, (50, 150), (85, 400), barColor, 3)
+        cv2.rectangle(img, (50, int(volBar)), (85, 400), barColor, cv2.FILLED)
+        cv2.putText(img, f'{volPer}%', (40, 430),
+                    cv2.FONT_HERSHEY_PLAIN, 2.5, barColor, 3)
+
+    # FPS display
     cTime = time.time()
     fps = 1 / (cTime - pTime + 1e-8)
     pTime = cTime
+    cv2.putText(img, f'FPS: {int(fps)}', (10, 60),
+                cv2.FONT_HERSHEY_PLAIN, 2, (200, 255, 255), 2)
 
-    try:
-        cv2.putText(img, f'FPS: {int(fps)}', (10, 70),
-                    cv2.FONT_HERSHEY_PLAIN, 3, (255, 0, 255), 3)
-        cv2.imshow("Hand Tracking", img)
-    except cv2.error as e:
-        print("OpenCV error:", e)
-        continue
-
+    # Show window
+    cv2.imshow("Volume Control", img)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
