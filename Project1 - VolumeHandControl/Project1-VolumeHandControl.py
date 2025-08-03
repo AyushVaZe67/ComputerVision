@@ -4,13 +4,22 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import cv2
 import time
 import HandTrackingModule as htm
+import math
+from pycaw.pycaw import AudioUtilities
 
 # Initialize camera
 cap = cv2.VideoCapture(0)
 pTime = 0
-
 # Create hand detector
 detector = htm.HandDetector(detectionCon=0.7)
+
+device = AudioUtilities.GetSpeakers()
+volume = device.EndpointVolume
+print(f"Audio output: {device.FriendlyName}")
+# print(f"- Muted: {bool(volume.GetMute())}")
+# print(f"- Volume level: {volume.GetMasterVolumeLevel()} dB")
+print(f"- Volume range: {volume.GetVolumeRange()[0]} dB - {volume.GetVolumeRange()[1]} dB")
+# volume.SetMasterVolumeLevel(-20.0, None)
 
 while True:
     success, img = cap.read()
@@ -27,7 +36,7 @@ while True:
 
 
     if len(lmList) != 0:
-        print(lmList[4],lmList[8])
+        # print(lmList[4],lmList[8])
 
         x1,y1 = lmList[4][1],lmList[4][2]
         x2,y2 = lmList[8][1],lmList[8][2]
@@ -37,6 +46,14 @@ while True:
         cv2.circle(img, (x2, y2), 15, (0,255,0), cv2.FONT_HERSHEY_PLAIN)
         cv2.line(img,(x1,y1),(x2,y2),(255,0,0),3)
         cv2.circle(img,(cx,cy),15,(255,0,55),cv2.FILLED)
+
+        length = math.hypot(x2-x1,y2-y1)
+        print(length)
+
+        if length<50:
+            cv2.circle(img, (cx, cy), 15, (255, 255, 55), cv2.FILLED)
+
+
 
     # FPS calculation
     cTime = time.time()
