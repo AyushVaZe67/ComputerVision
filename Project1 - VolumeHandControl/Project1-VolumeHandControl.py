@@ -5,6 +5,7 @@ import cv2
 import time
 import HandTrackingModule as htm
 import math
+import numpy as np
 from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
@@ -23,15 +24,18 @@ volume = cast(interface, POINTER(IAudioEndpointVolume))
 # print(f"Audio output: {device.FriendlyName}")
 # # print(f"- Muted: {bool(volume.GetMute())}")
 # # print(f"- Volume level: {volume.GetMasterVolumeLevel()} dB")
-print(f"- Volume range: {volume.GetVolumeRange()[0]} dB - {volume.GetVolumeRange()[1]} dB")
+# print(f"- Volume range: {volume.GetVolumeRange()[0]} dB - {volume.GetVolumeRange()[1]} dB")
+volRange = volume.GetVolumeRange()
 volume.SetMasterVolumeLevel(0.0, None)
+minVol = volRange[0]
+maxVol = volRange[1]
+
 
 while True:
     success, img = cap.read()
     if not success or img is None:
         print("Failed to capture frame.")
         continue
-
 
     # Detect hands
     img, _ = detector.findHands(img)
@@ -55,10 +59,12 @@ while True:
         length = math.hypot(x2-x1,y2-y1)
         print(length)
 
+        #HandRange
+        vol = np.interp(length,[50,300],[minVol,maxVol])
+        print(int(length),vol)
+
         if length<50:
             cv2.circle(img, (cx, cy), 15, (255, 255, 55), cv2.FILLED)
-
-
 
     # FPS calculation
     cTime = time.time()
