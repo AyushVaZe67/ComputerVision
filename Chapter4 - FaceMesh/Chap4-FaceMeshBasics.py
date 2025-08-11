@@ -11,7 +11,7 @@ pTime = 0
 
 mpDraw = mp.solutions.drawing_utils
 mpFaceMesh = mp.solutions.face_mesh
-faceMesh = mpFaceMesh.FaceMesh(max_num_faces=1)
+faceMesh = mpFaceMesh.FaceMesh(max_num_faces=2)
 drawSpec = mpDraw.DrawingSpec(thickness=1,circle_radius=1)
 
 while True:
